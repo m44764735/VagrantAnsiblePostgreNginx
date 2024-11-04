@@ -1,2 +1,5 @@
-# VagrantAnsiblePostgreNginx
-Playbook using Ansible to deploy PostgreSQL, Nginx and Semaphore to Vagrant
+# Deploy PostgreSQL, Nginx and Semaphore
+
+This playbooks deploy PostgreSQL, Nginx and Semaphore(Dockered) to Vagrant VM usent Ansible
+
+
