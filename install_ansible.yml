@@ -1,0 +1,68 @@
+---
+- hosts: all
+  become: true
+  vars_files:
+    - vars.yml
+  roles:
+    - geerlingguy.postgresql
+
+  tasks:
+    - name: Add ansible repository.
+      ansible.builtin.apt_repository:
+        repo: 'ppa:ansible/ansible'
+        update_cache: true
+
+    - name: Install Ansible and tools.
+      ansible.builtin.apt:
+        name: ansible,docker.io,docker-compose,nginx,mc
+        state: "latest"
+
+    - name: Start a container semaphoreui
+      ansible.builtin.docker_container:
+        name: "psqlsemaphoreui"
+        image: semaphoreui/semaphore:latest
+        restart_policy: unless-stopped
+        ports:
+          - "3000:3000"
+        env:
+          SEMAPHORE_ADMIN_PASSWORD: "12345678"
+          SEMAPHORE_ADMIN_NAME: "admin"
+          SEMAPHORE_ADMIN_EMAIL: "admin@localhost"
+          SEMAPHORE_ADMIN: "admin"
+          SEMAPHORE_PLAYBOOK_PATH: "./playbooks"
+          SEMAPHORE_DB_USER: "semaphore"
+          SEMAPHORE_DB_PASS: "semaphore"
+          SEMAPHORE_DB_HOST: "localhost"
+          SEMAPHORE_DB_PORT: "5432"
+          SEMAPHORE_DB_DIALECT: "postgres"
+          SEMAPHORE_DB: "semaphore"
+        networks:
+          - name: "host"
+
+    - name: "Copy nginx config"
+      ansible.builtin.copy:
+        src: "file/proxy.conf"
+        dest: "/etc/nginx/sites-available/proxy.conf"
+        owner: "vagrant"
+        group: "vagrant"
+        mode: "0644"
+
+    - name: "Enable configuration"
+      ansible.builtin.file:
+        src: "/etc/nginx/sites-available/proxy.conf"
+        dest: "/etc/nginx/sites-enabled/proxy"
+        state: "link"
+
+    - name: "Disable configuration"
+      ansible.builtin.file:
+        path: "/etc/nginx/sites-enabled/default"
+        state: "absent"
+
+    - name: "Reload nginx"
+      ansible.builtin.service:
+        name: "nginx"
+        state: "reloaded"
+
+    - name: "Print all available ip4 addr"
+      ansible.builtin.debug:
+        var: ansible_all_ipv4_addresses

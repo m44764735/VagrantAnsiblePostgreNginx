@@ -1,0 +1,6 @@
+postgresql_databases:
+  - name: semaphore
+postgresql_users:
+  - name: semaphore
+    db: semaphore
+    password: semaphore
