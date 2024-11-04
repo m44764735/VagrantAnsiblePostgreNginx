@@ -2,6 +2,7 @@ Vagrant.configure("2") do |config|
     config.vm.define "controlnode" do |controlnode|
       controlnode.vm.box = "ubuntu/focal64"
        controlnode.vm.hostname = "controlnode"
+# change the interface name, from "enp8s0" to your
        controlnode.vm.network :public_network, bridge: "enp8s0"
 
     controlnode.vm.provision "ansible" do |ansible|
